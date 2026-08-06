@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="global-error" style="color: red; padding: 20px; font-family: monospace; white-space: pre-wrap; z-index: 9999; position: fixed; top: 0; left: 0; background: white; width: 100vw; height: 100vh; display: none;"></div>
+    <script>
+      window.addEventListener('error', (event) => {
+        const errDiv = document.getElementById('global-error');
+        errDiv.style.display = 'block';
+        errDiv.innerText += '\n' + event.error?.stack || event.message;
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        const errDiv = document.getElementById('global-error');
+        errDiv.style.display = 'block';
+        errDiv.innerText += '\nUnhandled Promise Rejection: ' + (event.reason?.stack || event.reason);
+      });
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
