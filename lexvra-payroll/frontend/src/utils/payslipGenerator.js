@@ -93,7 +93,7 @@ export const generateSalarySlipPDF = (employeeData) => {
   doc.setTextColor(11, 25, 48);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('LEXVRA INFINOLOGY PRIVATE LIMITED', 105, 16, { align: 'center' });
+  doc.text('PayFlexPayroll', 105, 16, { align: 'center' });
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -421,8 +421,8 @@ export const generateSalarySlipPDF = (employeeData) => {
   doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
   doc.text('+91 98765 43210', 25, 284);
-  doc.text('info@lexvra.com', 75, 284);
-  doc.text('www.lexvra.com', 125, 284);
+  doc.text('contact@payflexpayroll.com', 75, 284);
+  doc.text('www.payflexpayroll.com', 125, 284);
   doc.text('Mohali, Punjab - 160071', 175, 284);
 
   // Icons for footer

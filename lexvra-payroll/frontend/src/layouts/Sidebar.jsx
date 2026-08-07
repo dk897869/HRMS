@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import axiosClient from '../api/axiosClient';
 
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
@@ -97,6 +98,15 @@ const Sidebar = ({ onMobileItemClick }) => {
   const isEmployee = user?.role?.toUpperCase() === 'EMPLOYEE';
   const navSections = isEmployee ? employeeNavItems : adminNavItems;
 
+  const [openNav, setOpenNav] = React.useState(false);
+  const [companySettings, setCompanySettings] = React.useState(null);
+
+  React.useEffect(() => {
+    axiosClient.get('/settings')
+      .then(res => setCompanySettings(res.data?.data || res.data))
+      .catch(() => {});
+  }, []);
+
   const handleItemClick = (path) => {
     navigate(path);
     if (onMobileItemClick) onMobileItemClick();
@@ -128,36 +138,25 @@ const Sidebar = ({ onMobileItemClick }) => {
         boxShadow: '2px 0 12px rgba(0,0,0,0.04)',
       }}
     >
-      {/* Brand Header */}
-      <Box sx={{ px: 2.5, pt: 2.5, pb: 2, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: '1px solid #F1F5F9' }}>
-        <Box
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #2563EB, #4F46E5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 900,
-            fontSize: '0.9rem',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '-0.5px',
-            flexShrink: 0,
-          }}
-        >
-          LX
-        </Box>
-        <Box>
-          <Typography sx={{ fontWeight: 900, fontSize: '0.92rem', letterSpacing: '0.5px', lineHeight: 1, color: '#0F172A', fontFamily: 'Inter, sans-serif' }}>
-            LEXVRA
-          </Typography>
-          <Typography sx={{ color: '#94A3B8', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '1px', mt: 0.2 }}>
-            HRMS PLATFORM
-          </Typography>
-        </Box>
+      {/* Logo Section */}
+      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {companySettings?.companyLogoUrl ? (
+          <Box component="img" src={companySettings.companyLogoUrl} alt="Company Logo" sx={{ height: 40, objectFit: 'contain', width: 'auto', maxWidth: '100%' }} />
+        ) : (
+          <>
+            <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)', fontFamily: 'Inter, sans-serif', letterSpacing: '-0.5px', flexShrink: 0 }}>
+              LX
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 900, fontSize: '0.92rem', letterSpacing: '0.5px', lineHeight: 1, color: '#0F172A', fontFamily: 'Inter, sans-serif' }}>
+                {companySettings?.companyName || 'LEXVRA'}
+              </Typography>
+              <Typography sx={{ color: '#94A3B8', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '1px', mt: 0.2 }}>
+                HRMS PLATFORM
+              </Typography>
+            </Box>
+          </>
+        )}
       </Box>
 
       {/* Navigation Sections */}

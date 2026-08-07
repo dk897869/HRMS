@@ -105,7 +105,7 @@ const AttendanceOverview = () => {
     try {
       const [empRes, attRes] = await Promise.all([
         axiosClient.get('/employees').catch(() => null),
-        axiosClient.get('/attendance/logs').catch(() => null)
+        axiosClient.get('/attendance/logs?historical=true').catch(() => null)
       ]);
       const empList = Array.isArray(empRes?.data) ? empRes.data : Array.isArray(empRes) ? empRes : [];
       setEmployees(empList);
@@ -530,6 +530,7 @@ const AttendanceOverview = () => {
                    {['DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map(t => <TableCell key={t} sx={{ fontWeight: 800, color: '#A3AED0', py: 1.5 }}>{t}</TableCell>)}
                  </TableRow>
                </TableHead>
+               <TableBody>
                  {modalLogs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4, color: '#94A3B8', fontWeight: 600 }}>No attendance records found for this period.</TableCell>

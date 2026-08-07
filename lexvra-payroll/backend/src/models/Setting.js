@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const settingSchema = new mongoose.Schema({
-  companyName: { type: String, default: 'LEXVRA INFINOLOGY PRIVATE LIMITED' },
-  tagline: { type: String, default: 'Innovate. Integrate. Elevate.' },
-  companyEmail: { type: String, default: 'contact@lexvra.com' },
+  companyName: { type: String, default: 'PayFlexPayroll' },
+  companyLogoUrl: { type: String, default: '/PayFlexPayroll Logo.png' },
+  tagline: { type: String, default: 'Flexible Payroll. Simplified HR.' },
+  companyEmail: { type: String, default: 'contact@payflexpayroll.com' },
   companyPhone: { type: String, default: '+91 98765 43210' },
   address: { type: String, default: 'E-229, Industrial Area, Phase 8-B, Mohali, Punjab 160055, India' },
   currency: { type: String, default: 'INR (₹)' },

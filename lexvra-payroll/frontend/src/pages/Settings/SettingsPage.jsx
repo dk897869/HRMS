@@ -58,8 +58,18 @@ const SettingsPage = () => {
     joiningDate: '2024-01-01',
     address: 'E-229, Industrial Area, Phase 8-B, Mohali, Punjab, India - 160071',
     about: 'Passionate about building modern HRMS web portals.',
-    avatar: reduxUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256'
+    avatar: reduxUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256',
+    companyName: 'PayFlexPayroll',
+    companyLogoUrl: '/PayFlexPayroll Logo.png'
   });
+
+  React.useEffect(() => {
+    axiosClient.get('/settings').then(res => {
+      if (res.data?.data) {
+        setProfileData(prev => ({ ...prev, ...res.data.data }));
+      }
+    }).catch(console.error);
+  }, []);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -279,6 +289,15 @@ const SettingsPage = () => {
                     </Typography>
 
                     <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', mb: 0.5, display: 'block' }}>Company Name (Appears on Docs)</Typography>
+                        <TextField fullWidth size="small" value={profileData.companyName || ''} onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })} sx={{ bgcolor: '#F8FAFC' }} />
+                      </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', mb: 0.5, display: 'block' }}>Company Logo URL (Appears on Docs & App)</Typography>
+                        <TextField fullWidth size="small" value={profileData.companyLogoUrl || ''} onChange={(e) => setProfileData({ ...profileData, companyLogoUrl: e.target.value })} sx={{ bgcolor: '#F8FAFC' }} />
+                      </Grid>
                       <Grid item xs={12} sm={6}>
                         <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', mb: 0.5, display: 'block' }}>Full Name / Display Name</Typography>
                         <TextField fullWidth size="small" value={profileData.fullName} onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })} sx={{ bgcolor: '#F8FAFC' }} />
