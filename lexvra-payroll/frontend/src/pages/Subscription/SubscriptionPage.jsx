@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Grid, Button, Paper, Chip, Avatar
+  Box, Typography, Grid, Button, Paper, Chip, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, IconButton
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
@@ -14,8 +14,11 @@ import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import StarIcon from '@mui/icons-material/Star';
 import LinearProgress from '@mui/material/LinearProgress';
 import Link from '@mui/material/Link';
+import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
 import toast from 'react-hot-toast';
 import axiosClient from '../../api/axiosClient';
+import { generateInvoicePDF } from '../../utils/invoiceGenerator';
 
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -35,12 +38,27 @@ const SubscriptionPage = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 18, minutes: 42, seconds: 37 });
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPlan, setCurrentPlan] = useState('Free Trial');
+  const [subscriptionExpiry, setSubscriptionExpiry] = useState(null);
+  const [subscriptionStart, setSubscriptionStart] = useState(null);
+  const [companySettings, setCompanySettings] = useState(null);
+
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [recentPayment, setRecentPayment] = useState(null);
 
   useEffect(() => {
     // Fetch user settings to see if they are subscribed
     axiosClient.get('/settings').then((res) => {
-      if (res.data?.data?.subscriptionPlan) {
-        setCurrentPlan(res.data.data.subscriptionPlan);
+      if (res.data?.data) {
+        setCompanySettings(res.data.data);
+        if (res.data.data.subscriptionPlan) {
+          setCurrentPlan(res.data.data.subscriptionPlan);
+        }
+        if (res.data.data.subscriptionExpiry) {
+          setSubscriptionExpiry(res.data.data.subscriptionExpiry);
+        }
+        if (res.data.data.trialStartDate) {
+          setSubscriptionStart(res.data.data.trialStartDate);
+        }
       }
     }).catch(console.error);
 
@@ -75,12 +93,12 @@ const SubscriptionPage = () => {
 
     try {
       // 1. Create Order on Backend
-      const { data: orderData } = await axiosClient.post('/payment/create-order', {
+      const orderData = await axiosClient.post('/payment/create-order', {
         amount,
         plan: planName
       });
 
-      if (!orderData.success) {
+      if (!orderData || !orderData.success) {
         toast.error('Failed to create order');
         return;
       }
@@ -90,7 +108,7 @@ const SubscriptionPage = () => {
         key: 'rzp_test_TEwpOxhGVvjjNK',
         amount: orderData.order.amount,
         currency: orderData.order.currency,
-        name: 'PayFlexPayroll',
+        name: companySettings?.companyName || 'PayFlexPayroll',
         description: `Subscription: ${planName}`,
         order_id: orderData.order.id,
         handler: async function (response) {
@@ -103,9 +121,14 @@ const SubscriptionPage = () => {
               plan: planName
             });
 
-            if (verifyRes.data.success) {
-              toast.success('Payment Successful! Subscription upgraded.');
-              setCurrentPlan(planName);
+            if (verifyRes && verifyRes.success) {
+              setRecentPayment({
+                planName,
+                amount,
+                id: response.razorpay_payment_id,
+                date: new Date().toISOString()
+              });
+              setSuccessModalOpen(true);
             }
           } catch (err) {
             toast.error('Payment Verification Failed!');
@@ -113,8 +136,8 @@ const SubscriptionPage = () => {
         },
         prefill: {
           name: 'Admin User',
-          email: 'admin@payflexpayroll.com',
-          contact: '9999999999'
+          email: companySettings?.companyEmail || 'admin@payflexpayroll.com',
+          contact: companySettings?.companyPhone || '9999999999'
         },
         theme: {
           color: '#4318FF'
@@ -127,6 +150,7 @@ const SubscriptionPage = () => {
       });
       rzp.open();
     } catch (error) {
+      console.error('Checkout error:', error);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -140,6 +164,18 @@ const SubscriptionPage = () => {
       toast('Subscription cancelled. You will have access until the end of your billing cycle.', { icon: '✅' });
       setCurrentPlan('Free Trial');
     }
+  };
+
+  const handleDownloadInvoice = () => {
+    if (!currentPlan || currentPlan === 'Free Trial') return;
+    generateInvoicePDF(companySettings, {
+      name: currentPlan,
+      start: subscriptionStart || new Date().toISOString(),
+      expiry: subscriptionExpiry || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+      amount: currentPlan.includes('Monthly') ? 399 : currentPlan.includes('100') ? 7999 : 4999
+    }, {
+      invoiceNumber: recentPayment?.id || `INV-${Math.floor(Math.random() * 1000000)}`
+    });
   };
 
   const formatNumber = (num) => num.toString().padStart(2, '0');
@@ -170,17 +206,22 @@ const SubscriptionPage = () => {
               {currentPlan === 'Free Trial' && <Chip label="7 Days Trial" size="small" sx={{ bgcolor: '#EEF2FF', color: '#4318FF', fontWeight: 700, borderRadius: '6px' }} />}
               {currentPlan !== 'Free Trial' && <Chip label="Active" size="small" sx={{ bgcolor: '#ECFDF5', color: '#10B981', fontWeight: 700, borderRadius: '6px' }} />}
             </Box>
-            <Typography variant="body2" sx={{ color: '#A3AED0', mb: 3, maxWidth: 400 }}>
+            <Typography variant="body2" sx={{ color: '#A3AED0', mb: 2, maxWidth: 450 }}>
               {currentPlan === 'Free Trial' 
                 ? 'Explore PayFlexPayroll with full access. Choose a plan to continue using all features.' 
-                : 'Thank you for choosing PayFlexPayroll. Enjoy premium features!'}
+                : `Thank you for choosing PayFlexPayroll. Enjoy premium features! Valid until ${new Date(subscriptionExpiry).toLocaleDateString()}.`}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })} variant="contained" sx={{ bgcolor: '#4318FF', '&:hover': { bgcolor: '#3311DB' }, textTransform: 'none', borderRadius: '10px', fontWeight: 700, px: 3 }}>
                 Upgrade Plan
               </Button>
+              {currentPlan !== 'Free Trial' && (
+                <Button onClick={handleDownloadInvoice} variant="outlined" startIcon={<DownloadIcon />} sx={{ color: '#1B254B', borderColor: '#E2E8F0', textTransform: 'none', borderRadius: '10px', fontWeight: 700, px: 3 }}>
+                  Download Invoice
+                </Button>
+              )}
               <Button onClick={handleManageCancel} variant="outlined" sx={{ color: '#EF4444', borderColor: '#EF4444', textTransform: 'none', borderRadius: '10px', fontWeight: 700, px: 3, '&:hover':{ bgcolor: '#FEF2F2', borderColor: '#EF4444' } }}>
-                Cancel Subscription
+                Cancel
               </Button>
             </Box>
           </Box>
@@ -377,6 +418,59 @@ const SubscriptionPage = () => {
         </Paper>
       </Box>
 
+      {/* Success Dialog */}
+      <Dialog 
+        open={successModalOpen} 
+        onClose={() => {
+          setSuccessModalOpen(false);
+          window.location.reload();
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 2 } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 900, color: '#1B254B' }}></Typography>
+          <IconButton onClick={() => { setSuccessModalOpen(false); window.location.reload(); }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }}>
+          <Avatar sx={{ bgcolor: '#10B981', width: 80, height: 80, mx: 'auto', mb: 3 }}>
+            <CheckCircleIcon sx={{ fontSize: 50, color: '#fff' }} />
+          </Avatar>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: '#1B254B', mb: 1 }}>
+            Payment Successful!
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#64748B', mb: 4 }}>
+            Thank you for upgrading to <b>{recentPayment?.planName}</b>. Your account has been upgraded successfully and all premium features are now unlocked.
+          </Typography>
+          
+          <Box sx={{ bgcolor: '#F8FAFC', p: 3, borderRadius: '16px', textAlign: 'left', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748B' }}>Amount Paid</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1B254B' }}>₹{recentPayment?.amount?.toLocaleString()}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748B' }}>Transaction ID</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1B254B' }}>{recentPayment?.id}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="caption" sx={{ color: '#64748B' }}>Date</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1B254B' }}>{new Date().toLocaleDateString()}</Typography>
+            </Box>
+          </Box>
+          
+          <Button 
+            onClick={() => { setSuccessModalOpen(false); window.location.reload(); }} 
+            variant="contained" 
+            fullWidth 
+            sx={{ py: 1.5, borderRadius: '12px', bgcolor: '#4318FF', fontWeight: 800, textTransform: 'none', '&:hover': { bgcolor: '#3311DB' } }}
+          >
+            Continue to Dashboard
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
