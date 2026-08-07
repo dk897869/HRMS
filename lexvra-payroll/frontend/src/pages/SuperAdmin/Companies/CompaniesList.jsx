@@ -4,7 +4,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LoginIcon from '@mui/icons-material/Login';
 import BlockIcon from '@mui/icons-material/Block';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import axiosClient from '../../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
@@ -125,7 +125,7 @@ const CompaniesList = () => {
                         </IconButton>
                         {company.subscriptionStatus === 'Suspended' ? (
                           <IconButton size="small" sx={{ color: '#F59E0B', bgcolor: '#FEF3C7', '&:hover': { bgcolor: '#FDE68A' }, borderRadius: '8px' }} title="Activate">
-                            <CheckCircleOutlineIcon fontSize="small" />
+                            <CheckCircleIcon fontSize="small" />
                           </IconButton>
                         ) : (
                           <IconButton size="small" sx={{ color: '#EF4444', bgcolor: '#FEF2F2', '&:hover': { bgcolor: '#FEE2E2' }, borderRadius: '8px' }} title="Suspend">

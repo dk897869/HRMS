@@ -13,6 +13,8 @@ import SuperAdminLogin from './pages/SuperAdmin/Auth/SuperAdminLogin';
 import SuperAdminDashboard from './pages/SuperAdmin/Dashboard/SuperAdminDashboard';
 import CompaniesList from './pages/SuperAdmin/Companies/CompaniesList';
 import CompanyDetails from './pages/SuperAdmin/Companies/CompanyDetails';
+import SuperAdminSettings from './pages/SuperAdmin/Settings/SuperAdminSettings';
+import SuperAdminSubscriptions from './pages/SuperAdmin/Subscriptions/SuperAdminSubscriptions';
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
               <Route path="dashboard" element={<SuperAdminDashboard />} />
               <Route path="companies" element={<CompaniesList />} />
               <Route path="companies/:id" element={<CompanyDetails />} />
+              <Route path="settings" element={<SuperAdminSettings />} />
+              <Route path="subscriptions" element={<SuperAdminSubscriptions />} />
             </Route>
 
             {/* Default App Routes */}
