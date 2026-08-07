@@ -11,6 +11,8 @@ const Leave = require('../models/Leave');
 const Payroll = require('../models/Payroll');
 const Claim = require('../models/Claim');
 const Setting = require('../models/Setting');
+const Company = require('../models/Company');
+const Invoice = require('../models/Invoice');
 const { calculatePayroll } = require('../utils/payrollCalc');
 
 const seedData = async () => {
@@ -163,6 +165,77 @@ const seedData = async () => {
     adminEmp.user = adminUser._id;
     await adminEmp.save();
 
+    // 6.5 Super Admin User
+    let superAdmin = await User.findOne({ email: 'superadmin@payflexpayroll.com' });
+    if (!superAdmin) {
+      superAdmin = new User({
+        name: 'Super Admin',
+        email: 'superadmin@payflexpayroll.com',
+        password: 'SuperAdmin@123',
+        role: 'SUPER_ADMIN',
+        avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=256'
+      });
+      await superAdmin.save();
+    } else {
+      superAdmin.password = 'SuperAdmin@123';
+      await superAdmin.save();
+    }
+
+    // 6.6 Default Company (for existing data migration compatibility)
+    let defaultCompany = await Company.findOne({ email: 'admin@lexvra.com' });
+    if (!defaultCompany) {
+      defaultCompany = await Company.create({
+        companyName: 'LEXVRA INFINOLOGY PRIVATE LIMITED',
+        email: 'admin@lexvra.com',
+        ownerId: adminUser._id,
+        subscriptionStatus: 'Trial',
+        employeeLimit: 20,
+        employeesUsed: 10
+      });
+    }
+    
+    // Assign companyId to admin
+    if (!adminUser.companyId) {
+      adminUser.companyId = defaultCompany._id;
+      await adminUser.save();
+    }
+
+    // 6.7 Seed Mock SaaS Companies for Super Admin Dashboard
+    const mockCompanies = [
+      { name: 'TechNova Solutions', email: 'hello@technova.com', status: 'Active', empUsed: 42, limit: 50, revenue: 4999 },
+      { name: 'Global Logistics Corp', email: 'admin@globallog.com', status: 'Expired', empUsed: 20, limit: 20, revenue: 399 },
+      { name: 'FinTrust Bank', email: 'hr@fintrust.com', status: 'Active', empUsed: 110, limit: 120, revenue: 7999 },
+      { name: 'Creative Minds Agency', email: 'jobs@creativeminds.com', status: 'Trial', empUsed: 5, limit: 20, revenue: 0 },
+      { name: 'Nexus Health', email: 'info@nexushealth.com', status: 'Active', empUsed: 48, limit: 50, revenue: 4999 }
+    ];
+
+    for (const mc of mockCompanies) {
+      let comp = await Company.findOne({ email: mc.email });
+      if (!comp) {
+        comp = await Company.create({
+          companyName: mc.name,
+          email: mc.email,
+          subscriptionStatus: mc.status,
+          employeeLimit: mc.limit,
+          employeesUsed: mc.empUsed,
+          currentVersion: '1.2.0',
+          createdAt: new Date(Date.now() - Math.floor(Math.random() * 90) * 24 * 60 * 60 * 1000) // Random join date in last 90 days
+        });
+
+        // Add dummy invoice for revenue
+        if (mc.revenue > 0) {
+          await Invoice.create({
+            companyId: comp._id,
+            invoiceNumber: `INV-${Math.floor(100000 + Math.random() * 900000)}`,
+            amount: mc.revenue,
+            totalAmount: mc.revenue,
+            status: 'Paid',
+            paidDate: new Date()
+          });
+        }
+      }
+    }
+
     // 7. Seed Sample Employees (matching exact screenshot entries)
     const sampleEmployees = [
       { id: 'EMP003', fn: 'Narayan Singh', ln: 'Rajput', email: 'narayan.rajput@lexvra.com', dept: 'PAY', desg: 'BDE', phone: '9876500003' },
@@ -211,6 +284,12 @@ const seedData = async () => {
         await emp.save();
       }
 
+      // Assign companyId to existing employees
+      if (!emp.companyId) {
+        emp.companyId = defaultCompany._id;
+        await emp.save();
+      }
+
       // Seed attendance punches for today
       let att = await Attendance.findOne({ employee: emp._id, date: today });
       if (!att) {
@@ -256,7 +335,9 @@ const seedData = async () => {
       });
     }
 
-    console.log('[Seeding]: Complete! Admin Login -> Email: admin@lexvra.com | Password: Admin@123');
+    console.log('[Seeding]: Complete!');
+    console.log('-> Super Admin Login: superadmin@payflexpayroll.com | Pass: SuperAdmin@123');
+    console.log('-> Company Admin Login: admin@lexvra.com | Pass: Admin@123');
   } catch (err) {
     console.error('[Seeding Error]:', err);
   }

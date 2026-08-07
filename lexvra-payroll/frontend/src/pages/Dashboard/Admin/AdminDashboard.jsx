@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const res = await axiosClient.get('/dashboard/stats');
-      setStats(res.data.stats);
+      setStats(res.stats);
     } catch (err) {
       console.log(err);
       toast.error('Failed to load dashboard data');

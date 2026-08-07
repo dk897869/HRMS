@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
   googleId: {
     type: String
   },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   isActive: {
     type: Boolean,
     default: true

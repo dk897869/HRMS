@@ -10,6 +10,8 @@ const errorHandler = require('./middleware/errorMiddleware');
 
 // Route Imports
 const authRoutes = require('./routes/authRoutes');
+const superAdminAuthRoutes = require('./routes/superAdminAuthRoutes');
+const superAdminRoutes = require('./routes/superAdminRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const payrollRoutes = require('./routes/payrollRoutes');
@@ -54,6 +56,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes Mounting
 app.use('/api/auth', authRoutes);
+app.use('/api/superadmin/auth', superAdminAuthRoutes);
+app.use('/api/superadmin', superAdminRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/payroll', payrollRoutes);
