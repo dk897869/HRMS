@@ -15,6 +15,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+import CardMembershipOutlinedIcon from '@mui/icons-material/CardMembershipOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
@@ -64,6 +65,7 @@ const adminNavItems = [
     section: 'SYSTEM',
     items: [
       { text: 'Settings', icon: SettingsOutlinedIcon, path: '/settings' },
+      { text: 'Subscription', icon: CardMembershipOutlinedIcon, path: '/subscription' },
     ]
   }
 ];
@@ -139,9 +141,9 @@ const Sidebar = ({ onMobileItemClick }) => {
       }}
     >
       {/* Logo Section */}
-      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {companySettings?.companyLogoUrl ? (
-          <Box component="img" src={companySettings.companyLogoUrl} alt="Company Logo" sx={{ height: 40, objectFit: 'contain', width: 'auto', maxWidth: '100%' }} />
+          <Box component="img" src={companySettings.companyLogoUrl} alt="Company Logo" sx={{ height: 65, objectFit: 'contain', width: 'auto', maxWidth: '100%' }} />
         ) : (
           <>
             <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)', fontFamily: 'Inter, sans-serif', letterSpacing: '-0.5px', flexShrink: 0 }}>

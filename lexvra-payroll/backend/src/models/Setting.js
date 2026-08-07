@@ -6,6 +6,8 @@ const settingSchema = new mongoose.Schema({
   tagline: { type: String, default: 'Flexible Payroll. Simplified HR.' },
   companyEmail: { type: String, default: 'contact@payflexpayroll.com' },
   companyPhone: { type: String, default: '+91 98765 43210' },
+  website: { type: String, default: 'www.payflexpayroll.com' },
+  gstNumber: { type: String, default: '' },
   address: { type: String, default: 'E-229, Industrial Area, Phase 8-B, Mohali, Punjab 160055, India' },
   currency: { type: String, default: 'INR (₹)' },
   timeZone: { type: String, default: '(GMT+05:30) Asia/Kolkata' },
@@ -13,6 +15,10 @@ const settingSchema = new mongoose.Schema({
   autoClockOut: { type: Boolean, default: false },
   googleOAuthEnabled: { type: Boolean, default: true },
   emailNotifications: { type: Boolean, default: true },
+  // Subscription System
+  subscriptionPlan: { type: String, default: 'Free Trial' },
+  trialStartDate: { type: Date, default: Date.now },
+  subscriptionExpiry: { type: Date },
   // Attendance Permissions & Geofencing
   attendanceWebEnabled: { type: Boolean, default: true },
   attendanceMobileEnabled: { type: Boolean, default: true },

@@ -30,6 +30,15 @@ const Header = ({ onMobileMenuToggle }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifAnchor, setNotifAnchor] = useState(null);
 
+  const [settings, setSettings] = useState(null);
+  useEffect(() => {
+    axiosClient.get('/settings').then(res => setSettings(res.data?.data || res.data)).catch(() => {});
+  }, []);
+
+  const trialDaysLeft = settings?.trialStartDate
+    ? Math.max(0, 7 - Math.floor((new Date() - new Date(settings.trialStartDate)) / (1000 * 60 * 60 * 24)))
+    : 7;
+
   const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
@@ -205,6 +214,23 @@ const Header = ({ onMobileMenuToggle }) => {
 
         {/* Right: Actions + Date + User */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Subscription Free Trial & Upgrade */}
+          {settings?.subscriptionPlan === 'Free Trial' && (
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, mr: 1 }}>
+              <Box sx={{ bgcolor: '#FFF1F2', color: '#E11D48', px: 1.5, py: 0.5, borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #FFE4E6' }}>
+                {trialDaysLeft} Days Free Trial Left
+              </Box>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => navigate('/subscription')}
+                sx={{ bgcolor: '#E11D48', color: '#fff', fontSize: '0.75rem', fontWeight: 700, borderRadius: '8px', '&:hover': { bgcolor: '#BE123C' }, textTransform: 'none', px: 2 }}
+              >
+                Upgrade
+              </Button>
+            </Box>
+          )}
+
           {/* Date Display */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.8, px: 1.5, py: 0.7, bgcolor: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', mr: 0.5 }}>
             <CalendarMonthOutlinedIcon sx={{ fontSize: '0.95rem', color: '#64748B' }} />

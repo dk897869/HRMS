@@ -6,6 +6,10 @@ const getSettings = asyncWrapper(async (req, res) => {
   let settings = await Setting.findOne();
   if (!settings) {
     settings = await Setting.create({});
+  } else if (settings.companyName === 'LEXVRA INFINOLOGY PRIVATE LIMITED') {
+    settings.companyName = 'PayFlexPayroll';
+    settings.companyLogoUrl = '/PayFlexPayroll Logo.png';
+    await settings.save();
   }
   return ApiResponse.success(res, 'Settings fetched', settings);
 });

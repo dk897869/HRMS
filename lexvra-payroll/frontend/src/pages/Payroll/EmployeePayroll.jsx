@@ -99,6 +99,15 @@ const EmployeePayroll = () => {
       }
     }
     
+    // Fetch settings dynamically to inject company brand and logo
+    let settings = {};
+    try {
+      const res = await axiosClient.get('/settings');
+      if (res.data?.data) settings = res.data.data;
+    } catch (err) {
+      console.error('Failed to fetch settings for payslip', err);
+    }
+    
     // Fallback to client-side generation for projected/current month
     generateSalarySlipPDF({
       name: user?.name || 'Employee',
@@ -123,8 +132,8 @@ const EmployeePayroll = () => {
       epf: epf ?? 0,
       totalDeductions: totalDeductions ?? 0,
       netPay: netTakeHome ?? 0
-    });
-    toast.success(`Salary Slip for ${monthName} downloaded successfully!`);
+    }, settings);
+    toast.success('Payslip downloaded successfully!');
   };
 
   const getMonthName = (monthNum) => {

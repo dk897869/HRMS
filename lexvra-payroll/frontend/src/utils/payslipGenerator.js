@@ -34,7 +34,7 @@ const numberToWords = (num) => {
   return 'Rupees ' + str.trim();
 };
 
-export const generateSalarySlipPDF = (employeeData) => {
+export const generateSalarySlipPDF = (employeeData, settings = {}) => {
   const PDFClass = jsPDF.jsPDF || jsPDF;
   const doc = new PDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -418,12 +418,23 @@ export const generateSalarySlipPDF = (employeeData) => {
   doc.line(10, 278, 200, 278);
 
   // Footer Contacts
+  doc.text(settings?.companyName || 'PayFlexPayroll', 105, 16, { align: 'center' });
+    
+  // Add GST if available
+  if (settings?.gstNumber) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`GST: ${settings.gstNumber}`, 105, 22, { align: 'center' });
+  }
+  
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
-  doc.text('+91 98765 43210', 25, 284);
-  doc.text('contact@payflexpayroll.com', 75, 284);
-  doc.text('www.payflexpayroll.com', 125, 284);
-  doc.text('Mohali, Punjab - 160071', 175, 284);
+  doc.text(settings?.companyPhone || '+91 98765 43210', 25, 284);
+  doc.text(settings?.companyEmail || 'contact@payflexpayroll.com', 75, 284);
+  doc.text(settings?.website || 'www.payflexpayroll.com', 125, 284);
+  doc.text(settings?.address || 'Mohali, Punjab - 160071', 175, 284);
 
   // Icons for footer
   doc.setFillColor(15, 23, 42);

@@ -24,6 +24,7 @@ import RolePermissionManagement from '../pages/Permissions/RolePermissionManagem
 import HolidayCalendar from '../pages/Holidays/HolidayCalendar';
 import Chats from '../pages/Chats/Chats';
 import AIAssistantPage from '../pages/AIAssistant/AIAssistantPage';
+import SubscriptionPage from '../pages/Subscription/SubscriptionPage';
 import NotFound from '../pages/NotFound/NotFound';
 
 const AppRoutes = () => {
@@ -61,6 +62,7 @@ const AppRoutes = () => {
         <Route path="profile" element={<ProfileSettings />} />
         <Route path="roles" element={<RolePermissionManagement />} />
         <Route path="holidays" element={<HolidayCalendar />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
       </Route>
 
       <Route path="404" element={<NotFound />} />

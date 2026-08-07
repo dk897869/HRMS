@@ -231,7 +231,15 @@ const AdminPayroll = () => {
     toast.success('Bulk settings applied!');
   };
 
-  const handleDownloadPayslip = (record) => {
+  const handleDownloadPayslip = async (record) => {
+    let settings = {};
+    try {
+      const res = await axiosClient.get('/settings');
+      if (res.data?.data) settings = res.data.data;
+    } catch (err) {
+      console.error('Failed to fetch settings for payslip', err);
+    }
+    
     generateSalarySlipPDF({
       name: record.name,
       empId: record.empId || 'EMP00X',
@@ -246,7 +254,7 @@ const AdminPayroll = () => {
       epf: record.epf,
       pt: record.pt || 0,
       netPay: record.net
-    });
+    }, settings);
     toast.success(`Payslip for ${record.name} downloaded successfully!`);
   };
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://lx-hrms-1.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://hrms-zzdq.onrender.com/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
