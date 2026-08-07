@@ -23,6 +23,7 @@ const assetRoutes = require('./routes/assetRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const settingRoutes = require('./routes/settingRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/org', orgRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
 app.use('/api/performance', performanceRoutes);
