@@ -72,6 +72,18 @@ const AttendanceOverview = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedEmp, setSelectedEmp] = useState(null);
   const [historyTab, setHistoryTab] = useState(1);
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  // Derived filtered logs for modal
+  const selectedEmpLogs = logs.filter(log => String(log.employee?._id || log.employee) === String(selectedEmp?._id));
+  let modalLogs = [...selectedEmpLogs].sort((a, b) => dayjs(b.punchIn).valueOf() - dayjs(a.punchIn).valueOf());
+  if (historyTab === 0) modalLogs = modalLogs.filter(log => dayjs().diff(dayjs(log.punchIn), 'day') <= 7);
+  else if (historyTab === 1) modalLogs = modalLogs.filter(log => dayjs(log.punchIn).isSame(dayjs(), 'month'));
+  else if (historyTab === 2) modalLogs = modalLogs.filter(log => dayjs(log.punchIn).isSame(dayjs(), 'year'));
+  else if (historyTab === 3 && customFrom && customTo) {
+    modalLogs = modalLogs.filter(log => dayjs(log.punchIn).isAfter(dayjs(customFrom).subtract(1, 'day')) && dayjs(log.punchIn).isBefore(dayjs(customTo).add(1, 'day')));
+  }
 
   // Settings Modal State
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -440,8 +452,9 @@ const AttendanceOverview = () => {
                               email, 
                               initial: name.charAt(0),
                               joiningDate: emp.joiningDate ? dayjs(emp.joiningDate).format('MMM DD, YYYY') : 'N/A',
-                              department: emp.department?.name || 'N/A',
-                              designation: emp.designation?.title || 'N/A'
+                              department: emp.department?.name || emp.department || 'N/A',
+                              designation: emp.designation?.title || emp.designation || 'N/A',
+                              _id: emp._id
                             })}
                             sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, color: '#4318FF', borderColor: '#4318FF55', '&:hover': { bgcolor: '#F4F7FE' } }}>
                             View
@@ -504,8 +517,8 @@ const AttendanceOverview = () => {
 
           {historyTab === 3 && (
             <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-              <TextField type="date" size="small" label="From Date" InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFF' } }} />
-              <TextField type="date" size="small" label="To Date" InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFF' } }} />
+              <TextField type="date" size="small" label="From Date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFF' } }} />
+              <TextField type="date" size="small" label="To Date" value={customTo} onChange={e => setCustomTo(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#FFF' } }} />
               <Button variant="contained" sx={{ borderRadius: '12px', bgcolor: '#4318FF', fontWeight: 800, textTransform: 'none', px: 4 }}>Fetch History</Button>
             </Box>
           )}
@@ -517,20 +530,25 @@ const AttendanceOverview = () => {
                    {['DATE', 'CHECK IN', 'CHECK OUT', 'HOURS', 'STATUS'].map(t => <TableCell key={t} sx={{ fontWeight: 800, color: '#A3AED0', py: 1.5 }}>{t}</TableCell>)}
                  </TableRow>
                </TableHead>
-               <TableBody>
-                 {[
-                   { d: 'Jul 30, 2026', ci: '09:15 AM', co: '06:12 PM', h: '8h 57m', s: 'PRESENT' },
-                   { d: 'Jul 29, 2026', ci: '09:20 AM', co: '06:15 PM', h: '8h 55m', s: 'PRESENT' },
-                   { d: 'Jul 28, 2026', ci: '—', co: '—', h: '—', s: 'ON_LEAVE' },
-                   { d: 'Jul 27, 2026', ci: '09:40 AM', co: '06:30 PM', h: '8h 50m', s: 'LATE' },
-                   { d: 'Jul 26, 2026', ci: '—', co: '—', h: '—', s: 'ABSENT' },
-                 ].map((r, i) => (
+                 {modalLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4, color: '#94A3B8', fontWeight: 600 }}>No attendance records found for this period.</TableCell>
+                    </TableRow>
+                 ) : modalLogs.map((log, i) => (
                    <TableRow key={i} sx={{ '&:hover': { bgcolor: '#F9FAFD' } }}>
-                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 800, color: '#1B254B', py: 1.5 }}>{r.d}</TableCell>
-                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 700, color: r.ci !== '—' ? '#01B574' : '#A3AED0' }}>{r.ci}</TableCell>
-                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 700, color: r.co !== '—' ? '#4318FF' : '#A3AED0' }}>{r.co}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 800, color: '#1B254B' }}>{r.h}</TableCell>
-                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE' }}>{getStatusChip(r.s)}</TableCell>
+                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 800, color: '#1B254B', py: 1.5 }}>
+                       {dayjs(log.punchIn || new Date()).format('MMM DD, YYYY')}
+                     </TableCell>
+                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 700, color: log.punchIn ? '#01B574' : '#A3AED0' }}>
+                       {log.punchIn ? dayjs(log.punchIn).format('hh:mm A') : '—'}
+                     </TableCell>
+                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 700, color: log.punchOut ? '#4318FF' : '#A3AED0' }}>
+                       {log.punchOut ? dayjs(log.punchOut).format('hh:mm A') : '—'}
+                     </TableCell>
+                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE', fontWeight: 800, color: '#1B254B' }}>
+                       {log.totalHours ? `${log.totalHours}h` : '—'}
+                     </TableCell>
+                     <TableCell sx={{ borderBottom: '1px solid #F4F7FE' }}>{getStatusChip(log.status)}</TableCell>
                    </TableRow>
                  ))}
                </TableBody>
